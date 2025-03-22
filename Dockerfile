@@ -1,5 +1,5 @@
-# Use the official Python image
-FROM ghcr.io/docker/library/python:3.11.9-slim
+# Use the official Python image from Docker Hub
+FROM python:3.11.9-slim
 
 # Install system dependencies for Tesseract and Poppler
 RUN apt-get update && apt-get install -y \
@@ -11,17 +11,12 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /app
 
-# Copy the project files
-COPY . .
-
-# Install Python dependencies
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port for the webhook
-EXPOSE 8000
+# Copy the rest of the application code
+COPY . .
 
-# Set environment variable for unbuffered output
-ENV PYTHONUNBUFFERED=1
-
-# Run the bot
+# Command to run the bot
 CMD ["python", "bot.py"]
