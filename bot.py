@@ -11,6 +11,8 @@ import google.generativeai as genai
 import pdf2image
 import logging
 from dotenv import load_dotenv
+import aiohttp
+from aiohttp import web
 
 # Load environment variables from .env file
 load_dotenv()
@@ -268,13 +270,24 @@ def main():
     if "RAILWAY" in os.environ:
         port = int(os.environ.get("PORT", 8000))
         webhook_url = f"https://{os.environ['RAILWAY_PUBLIC_DOMAIN']}/webhook"
-        application.run_webhook(
-            listen="0.0.0.0",
-            port=port,
-            url_path="/webhook",
-            webhook_url=webhook_url
-        )
-        print(f"Bot is running with webhook at {webhook_url}")
+
+        # Create a custom aiohttp app with a health check endpoint
+        app = aiohttp.web.Application()
+        app.router.add_post("/webhook", application.create_webhook_handler())
+        app.router.add_get("/health", lambda _: web.Response(text="OK"))
+
+        try:
+            application.run_webhook(
+                listen="0.0.0.0",
+                port=port,
+                url_path="/webhook",
+                webhook_url=webhook_url,
+                custom_app=app
+            )
+            print(f"Bot is running with webhook at {webhook_url}")
+        except Exception as e:
+            print(f"Failed to start webhook server: {e}")
+            raise
     else:
         application.run_polling()
 
