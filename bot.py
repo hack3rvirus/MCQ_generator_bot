@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# Log Tesseract version
+print(f"Tesseract version: {pytesseract.get_tesseract_version()}")
+
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
@@ -71,7 +74,7 @@ def extract_text_from_pdf(file_path):
 
     # Use OCR if direct extraction fails
     try:
-        images = pdf2image.convert_from_path(file_path, dpi=500)
+        images = pdf2image.convert_from_path(file_path, dpi=300)  # Reduced DPI
         text = ""
         for img in images:
             img = preprocess_image_for_ocr(img)
@@ -251,6 +254,13 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Main function
 def main():
+    # Log environment variables (without printing sensitive values)
+    print("Environment variables:")
+    print(f"TELEGRAM_TOKEN set: {bool(TELEGRAM_TOKEN)}")
+    print(f"GEMINI_API_KEY set: {bool(GEMINI_API_KEY)}")
+    print(f"PORT: {os.environ.get('PORT', '8000')}")
+    print(f"RAILWAY: {os.environ.get('RAILWAY', 'not set')}")
+
     request = HTTPXRequest(
         connection_pool_size=10,
         read_timeout=60.0,
@@ -277,6 +287,7 @@ def main():
         app.router.add_get("/health", lambda _: web.Response(text="OK"))
 
         try:
+            print(f"Starting webhook server on port {port}...")
             application.run_webhook(
                 listen="0.0.0.0",
                 port=port,
