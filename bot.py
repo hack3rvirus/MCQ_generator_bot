@@ -279,6 +279,8 @@ def main():
 
     if "RAILWAY" in os.environ:
         port = int(os.environ.get("PORT", 8000))
+        if "RAILWAY_PUBLIC_DOMAIN" not in os.environ:
+            raise ValueError("RAILWAY_PUBLIC_DOMAIN environment variable is not set")
         webhook_url = f"https://{os.environ['RAILWAY_PUBLIC_DOMAIN']}/webhook"
 
         # Create a custom aiohttp app with a health check endpoint
