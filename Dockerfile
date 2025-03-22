@@ -1,5 +1,5 @@
 # Use the official Python image
-FROM python:3.11-slim
+FROM python:3.11.9-slim
 
 # Install system dependencies for Tesseract and Poppler
 RUN apt-get update && apt-get install -y \
